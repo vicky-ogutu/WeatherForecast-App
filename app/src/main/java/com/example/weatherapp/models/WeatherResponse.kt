@@ -1,9 +1,8 @@
 package com.example.weatherapp.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class WeatherResponse(
-    val cod: String,
-    val message: Int,
-    val cnt: Int,
-    val list: List<WeatherForecast>,
-    val city: City? = null // Optional
+    val list: List<WeatherItem>
 )

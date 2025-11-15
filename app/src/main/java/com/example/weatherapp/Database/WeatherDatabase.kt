@@ -7,9 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.weatherapp.Dao.WeatherDao
 import com.example.weatherapp.models.WeatherEntity
+import com.example.weatherapp.models.WeatherItem
 import com.example.weatherapp.models.WeatherTypeConverter
 
-@Database(entities = [WeatherEntity::class], version = 1, exportSchema = false)
+@Database(entities = [WeatherItem::class], version = 2, exportSchema = false)
 @TypeConverters(WeatherTypeConverter::class)
 abstract class WeatherDatabase : RoomDatabase() {
 
