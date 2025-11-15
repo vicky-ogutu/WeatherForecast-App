@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class WeatherResponse(
-    val list: List<WeatherItem>
+    val list: List<ForecastItem>
 )
