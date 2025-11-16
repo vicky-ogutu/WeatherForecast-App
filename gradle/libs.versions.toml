@@ -15,6 +15,9 @@ junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 
+material3 = "1.4.0"
+material3IconsCore = "1.2.0"
+material3IconsExtended = "1.2.0"
 playServicesLocation = "21.3.0"
 room = "2.8.3"
 
@@ -33,6 +36,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 # Material
+androidx-material3-icons-core = { module = "androidx.compose.material3:material3-icons-core", version.ref = "material3IconsCore" }
+androidx-material3-icons-extended = { module = "androidx.compose.material3:material3-icons-extended", version.ref = "material3IconsExtended" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 # Lifecycle
@@ -59,6 +64,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 
 # Google Location
+material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 
 # Room

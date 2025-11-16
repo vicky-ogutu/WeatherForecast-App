@@ -1,23 +1,27 @@
 package com.example.weatherapp.UserInterface
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherapp.Repository.WeatherRepository
+import com.example.weatherapp.models.WeatherItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-
 
 class WeatherViewModel(
     private val repo: WeatherRepository
 ) : ViewModel() {
 
-    private val _weatherList = MutableStateFlow<List<com.example.weatherapp.models.WeatherItem>>(emptyList())
-    val weatherList: StateFlow<List<com.example.weatherapp.models.WeatherItem>> = _weatherList
+    private val _weatherList = MutableStateFlow<List<WeatherItem>>(emptyList())
+    val weatherList: StateFlow<List<WeatherItem>> = _weatherList
 
-    fun loadLocalWeather() {
+    init {
+        loadLocalWeather()
+    }
+
+     fun loadLocalWeather() {
         viewModelScope.launch {
-            repo.getLocalWeather().collect { list ->
+            repo.getLocalWeather().collectLatest { list ->
                 _weatherList.value = list
             }
         }
@@ -33,3 +37,4 @@ class WeatherViewModel(
         }
     }
 }
+
