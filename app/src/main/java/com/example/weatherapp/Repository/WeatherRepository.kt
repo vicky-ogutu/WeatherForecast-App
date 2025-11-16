@@ -14,22 +14,22 @@ import com.example.weatherapp.models.WeatherItem
         val response = api.getWeather(lat, lon, apiKey)
         val cityName = response.city.name
 
-        val items = response.list.map {
+        val items = response.list.map { it ->
             WeatherItem(
                 dt = it.dt,
-                temp = it.temp,
-                tempMin = it.tempMin,
-                tempMax = it.tempMax,
+                temp = it.main.temp,
+                tempMin = it.main.temp_min,
+                tempMax = it.main.temp_max,
                 humidity = it.main.humidity,
                 windSpeed = it.wind.speed,
-                description = it.weather.firstOrNull()?.description ?: "",
+                rainVolume = it.rain?.volume ?: 0.0,
+                description = it.weather.firstOrNull()?.description?.capitalize() ?: "No description",
                 icon = it.weather.firstOrNull()?.icon ?: "",
                 dt_txt = it.dt_txt,
                 city = cityName
-
-
             )
         }
+
         dao.insertAll(items)
     }
 }

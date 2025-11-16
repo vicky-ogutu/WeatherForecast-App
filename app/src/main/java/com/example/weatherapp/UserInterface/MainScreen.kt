@@ -32,16 +32,16 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.*
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
+fun MainScreen(viewModel: WeatherViewModel, navController: NavController) {
     val context = LocalContext.current
     val weatherList by viewModel.weatherList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val currentCity by viewModel.currentCity.collectAsState()
     var userLocation by remember { mutableStateOf<Location?>(null) }
 
     // Location permission launcher
@@ -58,7 +58,7 @@ fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
                     )
                 }
             } else {
-                // Fallback to Tokyo
+                // fallback to Tokyo
                 viewModel.refreshWeather(
                     35.6895,
                     139.6917,
@@ -68,7 +68,7 @@ fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
         }
     )
 
-    // Request location permission on first composition
+    // Request permission once
     LaunchedEffect(Unit) {
         locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
@@ -78,6 +78,7 @@ fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+
         // Header: City + Refresh
         Card(
             shape = RoundedCornerShape(12.dp),
@@ -92,7 +93,7 @@ fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = userLocation?.let { "Your Location" } ?: "Weather Forecast",
+                    text = currentCity ?: "Fetching location...",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -103,8 +104,8 @@ fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
                     modifier = Modifier
                         .size(28.dp)
                         .clickable {
-                            val lat = userLocation?.latitude ?: -1.2864
-                            val lon = userLocation?.longitude ?: 36.8172
+                            val lat = userLocation?.latitude ?: 35.6895
+                            val lon = userLocation?.longitude ?: 139.6917
                             viewModel.refreshWeather(lat, lon, WeatherConstants.WEATHER_API_KEY)
                         }
                 )
@@ -117,22 +118,18 @@ fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
         SwipeRefresh(
             state = rememberSwipeRefreshState(isRefreshing = isLoading),
             onRefresh = {
-                val lat = userLocation?.latitude ?: -1.2864
-                val lon = userLocation?.longitude ?: 36.8172
+                val lat = userLocation?.latitude ?: 35.6895
+                val lon = userLocation?.longitude ?: 139.6917
                 viewModel.refreshWeather(lat, lon, WeatherConstants.WEATHER_API_KEY)
             }
         ) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(weatherList) { weather ->
                     WeatherCard(weather = weather, onClick = {
-                        // Navigate to detail screen
                         navController.currentBackStackEntry
                             ?.savedStateHandle
                             ?.set("weather", weather)
-
                         navController.navigate("detail")
-
-
                     })
                 }
             }
@@ -166,7 +163,7 @@ fun WeatherCard(weather: WeatherItem, onClick: () -> Unit) {
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = weather.description,
+                    text = weather.description.capitalize(Locale.getDefault()),
                     fontSize = 16.sp,
                     color = Color.Gray
                 )
@@ -180,7 +177,6 @@ fun WeatherCard(weather: WeatherItem, onClick: () -> Unit) {
     }
 }
 
-
 fun formatDate(dateStr: String, pattern: String): String {
     return try {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -193,8 +189,24 @@ fun formatDate(dateStr: String, pattern: String): String {
 
 @SuppressLint("MissingPermission")
 private fun getCurrentLocation(context: Context, onLocation: (Location) -> Unit) {
-    val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-        location?.let { onLocation(it) }
+    val fusedLocationClient: FusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(context)
+
+    fusedLocationClient.getCurrentLocation(
+        com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+        null
+    ).addOnSuccessListener { location ->
+        if (location != null) {
+            onLocation(location)
+        } else {
+            // fallback to Tokyo
+            val tokyo = Location("").apply {
+                latitude = 35.6895
+                longitude = 139.6917
+            }
+            onLocation(tokyo)
+        }
     }
 }
+
+

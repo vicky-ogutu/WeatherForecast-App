@@ -1,7 +1,10 @@
+
 package com.example.weatherapp.models
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Rain(
-    @SerializedName("3h") val threeHour: Double? = null
+    @SerialName("3h") val volume: Double? = null
 )

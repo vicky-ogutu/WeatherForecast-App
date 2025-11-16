@@ -9,7 +9,7 @@ import com.example.weatherapp.Dao.WeatherDao
 import com.example.weatherapp.models.WeatherItem
 import com.example.weatherapp.models.WeatherTypeConverter
 
-@Database(entities = [WeatherItem::class], version = 4, exportSchema = false)
+@Database(entities = [WeatherItem::class], version = 5, exportSchema = false)
 @TypeConverters(WeatherTypeConverter::class)
 abstract class WeatherDatabase : RoomDatabase() {
 

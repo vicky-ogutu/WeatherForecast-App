@@ -11,6 +11,6 @@ interface WeatherApiService {
         @Query("lon") lon: Double,
         @Query("appid") apiKey: String,
         @Query("units") units: String = "metric",
-        @Query("lang") lang: String = "ja"
+        @Query("lang") lang: String = "en"   //ja for japan
     ): ForecastResponse
 }

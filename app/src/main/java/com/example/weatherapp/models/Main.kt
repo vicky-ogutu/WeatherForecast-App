@@ -6,7 +6,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Main(
     val temp: Double,
-    @SerialName("temp_min") val tempMin: Double,
-    @SerialName("temp_max") val tempMax: Double,
+    val temp_min: Double,
+    val temp_max: Double,
     val humidity: Int
 )
+
+

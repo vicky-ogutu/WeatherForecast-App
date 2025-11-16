@@ -1,6 +1,5 @@
 package com.example.weatherapp.models
 
-import android.R
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -20,7 +19,7 @@ data class WeatherItem(
     val description: String,
     val icon: String,
     val dt_txt: String,
-    val city: String?
+    val city: String?,
+    val rainVolume: Double?
+) : Parcelable
 
-
-): Parcelable
