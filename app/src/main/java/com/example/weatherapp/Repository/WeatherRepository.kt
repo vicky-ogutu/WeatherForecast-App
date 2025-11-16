@@ -12,6 +12,8 @@ import com.example.weatherapp.models.WeatherItem
 
     suspend fun fetchAndSaveWeather(lat: Double, lon: Double, apiKey: String) {
         val response = api.getWeather(lat, lon, apiKey)
+        val cityName = response.city.name
+
         val items = response.list.map {
             WeatherItem(
                 dt = it.dt,
@@ -22,7 +24,10 @@ import com.example.weatherapp.models.WeatherItem
                 windSpeed = it.wind.speed,
                 description = it.weather.firstOrNull()?.description ?: "",
                 icon = it.weather.firstOrNull()?.icon ?: "",
-                dt_txt = it.dt_txt
+                dt_txt = it.dt_txt,
+                city = cityName
+
+
             )
         }
         dao.insertAll(items)

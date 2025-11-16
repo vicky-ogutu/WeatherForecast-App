@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.kapt")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -41,10 +42,13 @@ android {
     buildFeatures {
         compose = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.4"
+    }
 }
 
 dependencies {
-
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -64,13 +68,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-   // implementation("androidx.compose.material3:material3-icons-extended:1.4.0")
-
-
-
-//    implementation(libs.androidx.material3.icons.core)
-//    implementation(libs.androidx.material3.icons.extended)
-
+    // Material Icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
@@ -102,5 +101,9 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
 
-}
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
+    // Accompanist for SwipeRefresh (if using this version)
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.31.5-beta")
+}

@@ -6,11 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.weatherapp.Dao.WeatherDao
-import com.example.weatherapp.models.WeatherEntity
 import com.example.weatherapp.models.WeatherItem
 import com.example.weatherapp.models.WeatherTypeConverter
 
-@Database(entities = [WeatherItem::class], version = 2, exportSchema = false)
+@Database(entities = [WeatherItem::class], version = 4, exportSchema = false)
 @TypeConverters(WeatherTypeConverter::class)
 abstract class WeatherDatabase : RoomDatabase() {
 
@@ -26,7 +25,7 @@ abstract class WeatherDatabase : RoomDatabase() {
                     context.applicationContext,
                     WeatherDatabase::class.java,
                     "weather_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

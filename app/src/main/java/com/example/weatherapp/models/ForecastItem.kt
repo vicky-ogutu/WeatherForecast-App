@@ -11,5 +11,7 @@ data class ForecastItem(
     val tempMax: Double,
     val weather: List<WeatherDescription>,
     val wind: Wind,
-    val dt_txt: String
+    val dt_txt: String,
+
 )
+

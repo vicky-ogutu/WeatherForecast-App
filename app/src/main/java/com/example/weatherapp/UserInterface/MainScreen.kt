@@ -1,38 +1,84 @@
 package com.example.weatherapp.UserInterface
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.weatherapp.WeatherConstants
+import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import com.example.weatherapp.Utils.WeatherConstants
 import com.example.weatherapp.models.WeatherItem
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 
+@SuppressLint("MissingPermission")
 @Composable
-fun MainScreen(viewModel: WeatherViewModel) {
+fun MainScreen(viewModel: WeatherViewModel,  navController: NavController) {
+    val context = LocalContext.current
     val weatherList by viewModel.weatherList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    var userLocation by remember { mutableStateOf<Location?>(null) }
+
+    // Location permission launcher
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                getCurrentLocation(context) { location ->
+                    userLocation = location
+                    viewModel.refreshWeather(
+                        location.latitude,
+                        location.longitude,
+                        WeatherConstants.WEATHER_API_KEY
+                    )
+                }
+            } else {
+                // Fallback to Tokyo
+                viewModel.refreshWeather(
+                    35.6895,
+                    139.6917,
+                    WeatherConstants.WEATHER_API_KEY
+                )
+            }
+        }
+    )
+
+    // Request location permission on first composition
+    LaunchedEffect(Unit) {
+        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // ===== Header Card: City + Refresh =====
+        // Header: City + Refresh
         Card(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -46,111 +92,95 @@ fun MainScreen(viewModel: WeatherViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Nairobi, Kenya",
+                    text = userLocation?.let { "Your Location" } ?: "Weather Forecast",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-//                Icon(
-//                    imageVector = Icons.Filled.Refresh,
-//                    contentDescription = "Refresh",
-//                    modifier = Modifier
-//                        .size(28.dp)
-//                        .clickable {
-//                            viewModel.refreshWeather(
-//                                -1.2864,
-//                                36.8172,
-//                                WeatherConstants.WEATHER_API_KEY
-//                            )
-//                        }
-//                )
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "Refresh",
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable {
+                            val lat = userLocation?.latitude ?: -1.2864
+                            val lon = userLocation?.longitude ?: 36.8172
+                            viewModel.refreshWeather(lat, lon, WeatherConstants.WEATHER_API_KEY)
+                        }
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ===== Current Weather Card =====
-        if (weatherList.isNotEmpty()) {
-            val currentWeather = weatherList.first()
-            CurrentWeatherCard(currentWeather)
-        }
+        // Pull-to-refresh
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(isRefreshing = isLoading),
+            onRefresh = {
+                val lat = userLocation?.latitude ?: -1.2864
+                val lon = userLocation?.longitude ?: 36.8172
+                viewModel.refreshWeather(lat, lon, WeatherConstants.WEATHER_API_KEY)
+            }
+        ) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(weatherList) { weather ->
+                    WeatherCard(weather = weather, onClick = {
+                        // Navigate to detail screen
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("weather", weather)
 
-        Spacer(modifier = Modifier.height(16.dp))
+                        navController.navigate("detail")
 
-        // ===== Forecast List =====
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(weatherList) { weather ->
-                WeatherCard(weather)
+
+                    })
+                }
             }
         }
     }
 }
 
 @Composable
-fun CurrentWeatherCard(weather: WeatherItem) {
+fun WeatherCard(weather: WeatherItem, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = formatDate(weather.dt_txt, "EEE, MMM dd - HH:mm"),
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = weather.description,
-                fontSize = 16.sp,
-                color = Color.Gray
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            val iconUrl = "https://openweathermap.org/img/wn/${weather.icon}@2x.png"
+            Image(
+                painter = rememberAsyncImagePainter(iconUrl),
+                contentDescription = weather.description,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(60.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "${weather.temp}°C", fontWeight = FontWeight.Bold)
-                Text(text = "Hum: ${weather.humidity}%", fontWeight = FontWeight.Medium)
-                Text(text = "Wind: ${weather.windSpeed} m/s", fontWeight = FontWeight.Medium)
+            Column {
+                Text(
+                    text = formatDate(weather.dt_txt, "EEE, MMM dd - HH:mm"),
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = weather.description,
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Temp: ${weather.temp}°C", fontWeight = FontWeight.Bold)
+                Text(text = "Min: ${weather.tempMin}°C, Max: ${weather.tempMax}°C")
+                Text(text = "Humidity: ${weather.humidity}%")
+                Text(text = "Wind: ${weather.windSpeed} m/s")
             }
         }
     }
 }
 
-@Composable
-fun WeatherCard(weather: WeatherItem) {
-    Card(
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = formatDate(weather.dt_txt, "EEE HH:mm"),
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = weather.description,
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "${weather.temp}°C", fontWeight = FontWeight.Bold)
-                Text(text = "Hum: ${weather.humidity}%", fontWeight = FontWeight.Medium)
-                Text(text = "Wind: ${weather.windSpeed} m/s", fontWeight = FontWeight.Medium)
-            }
-        }
-    }
-}
-
-// ===== Helper function to format date string =====
 fun formatDate(dateStr: String, pattern: String): String {
     return try {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -161,3 +191,10 @@ fun formatDate(dateStr: String, pattern: String): String {
     }
 }
 
+@SuppressLint("MissingPermission")
+private fun getCurrentLocation(context: Context, onLocation: (Location) -> Unit) {
+    val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+        location?.let { onLocation(it) }
+    }
+}
