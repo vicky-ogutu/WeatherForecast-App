@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // For Room and Hilt
     id("org.jetbrains.kotlin.kapt")
 }
 
@@ -46,19 +45,19 @@ android {
 
 dependencies {
 
-    //AndroidX Core
+    // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
 
-    //Material
+    // Material
     implementation(libs.material)
 
-    //Lifecycle & Activity
+    // Lifecycle & Activity
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
-    //Compose
+    // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -68,37 +67,31 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    //Navigation
+    // Navigation
     implementation(libs.navigation.compose)
 
-    //Coroutines
+    // Coroutines
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
 
-    //Room
+    // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
 
-    //Hilt
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
-
-    //Retrofit and OkHttp Logging-
+    // Retrofit + Logging
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging)
 
-
     // Location
     implementation(libs.play.services.location)
 
-    //Testing
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-
 }
+

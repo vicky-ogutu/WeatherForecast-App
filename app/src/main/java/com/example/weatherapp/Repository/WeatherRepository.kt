@@ -3,9 +3,8 @@ package com.example.weatherapp.Repository
 import com.example.weatherapp.Api.WeatherApiService
 import com.example.weatherapp.Dao.WeatherDao
 import com.example.weatherapp.models.WeatherItem
-import javax.inject.Inject
 
-class WeatherRepository @Inject constructor(
+    class WeatherRepository(
     private val api: WeatherApiService,
     private val dao: WeatherDao
 ) {
