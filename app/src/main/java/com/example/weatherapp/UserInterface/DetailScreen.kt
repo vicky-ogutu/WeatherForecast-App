@@ -23,7 +23,8 @@ fun DetailScreen(weather: WeatherItem) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp)
+            .padding(top = 24.dp), // top margin for the header
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
